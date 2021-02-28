@@ -44,7 +44,7 @@ public class ItemsHandler {
         Mono<Item> itemToBeInserted = serverRequest.bodyToMono(Item.class);
 
         return itemToBeInserted.flatMap(item ->
-                ServerResponse.created(URI.create(ItemConstants.ITEM_FUNCTIONAL_END_POINT_V1 +"/"+ item.getId()))
+                ServerResponse.created(URI.create(ItemConstants.ITEM_FUNCTIONAL_END_POINT_V1 + "/" + item.getId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(itemReactiveRepository.save(item), Item.class)
         );
@@ -57,5 +57,26 @@ public class ItemsHandler {
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(deletedItem, Void.class);
+    }
+
+    public Mono<ServerResponse> updateItem(ServerRequest serverRequest) {
+        String id = serverRequest.pathVariable("id");
+
+        Mono<Item> updatedItemFromDB = serverRequest.bodyToMono(Item.class)
+                .flatMap(item -> {
+                    Mono<Item> updatedItemMono = itemReactiveRepository.findById(id)
+                            .flatMap(currentItem -> {
+                                currentItem.setDescription(item.getDescription());
+                                currentItem.setPrice(item.getPrice());
+                                return itemReactiveRepository.save(currentItem);
+                            });
+                    return updatedItemMono;
+                });
+
+        return updatedItemFromDB.flatMap(item ->
+                ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromValue(item)))
+                .switchIfEmpty(notFound);
     }
 }

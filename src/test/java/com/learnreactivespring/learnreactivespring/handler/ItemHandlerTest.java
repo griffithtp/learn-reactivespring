@@ -139,4 +139,34 @@ public class ItemHandlerTest {
     }
 
 
+    @Test
+    public void updateItem() {
+
+        double newPrice = 299.00;
+        Item item = new Item(null, "Apple Mac Mini", newPrice);
+
+        webTestClient.put().uri(ITEM_FUNCTIONAL_END_POINT_V1.concat("/{id}"), "ABC")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(item), Item.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.price", newPrice);
+    }
+
+    @Test
+    public void updateItem_notFound() {
+
+        double newPrice = 299.00;
+        Item item = new Item(null, "Apple Mac Mini", newPrice);
+
+        webTestClient.put().uri(ITEM_FUNCTIONAL_END_POINT_V1.concat("/{id}"), "XYZ")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(item), Item.class)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
 }
