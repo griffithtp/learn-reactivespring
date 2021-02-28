@@ -19,6 +19,13 @@ public class ItemsRouter {
     public RouterFunction<ServerResponse> itemsRoute(ItemsHandler itemsHandler) {
         return RouterFunctions
                 .route(RequestPredicates.GET(ITEM_FUNCTIONAL_END_POINT_V1).and(accept(MediaType.APPLICATION_JSON))
-                , itemsHandler::getAllItems);
+                        , itemsHandler::getAllItems)
+                .andRoute(RequestPredicates.GET(ITEM_FUNCTIONAL_END_POINT_V1 + "/{id}").and(accept(MediaType.APPLICATION_JSON))
+                        , itemsHandler::getItem)
+                .andRoute(RequestPredicates.POST(ITEM_FUNCTIONAL_END_POINT_V1).and(accept(MediaType.APPLICATION_JSON))
+                        , itemsHandler::createItem)
+                .andRoute(RequestPredicates.DELETE(ITEM_FUNCTIONAL_END_POINT_V1 + "/{id}").and(accept(MediaType.APPLICATION_JSON))
+                        , itemsHandler::deleteItem)
+                ;
     }
 }

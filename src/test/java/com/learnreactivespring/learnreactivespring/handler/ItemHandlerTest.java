@@ -13,6 +13,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Arrays;
@@ -90,4 +91,52 @@ public class ItemHandlerTest {
                 .expectNextCount(5)
                 .verifyComplete();
     }
+
+
+    @Test
+    public void getItemById() {
+
+        webTestClient.get().uri(ITEM_FUNCTIONAL_END_POINT_V1.concat("/{id}"), "ABC")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.price", 999.00);
+    }
+
+    @Test
+    public void getItemById_notFound() {
+
+        webTestClient.get().uri(ITEM_FUNCTIONAL_END_POINT_V1.concat("/{id}"), "XYwkejnfZ")
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+
+    @Test
+    public void createItem() {
+
+        Item item = new Item(null, "Apple iPhone X", 999.00);
+        webTestClient.post().uri(ITEM_FUNCTIONAL_END_POINT_V1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(item), Item.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").isNotEmpty()
+                .jsonPath("$.description").isEqualTo("Apple iPhone X")
+                .jsonPath("$.price").isEqualTo(999.00);
+    }
+
+
+    @Test
+    public void deleteItem() {
+        webTestClient.get().uri(ITEM_FUNCTIONAL_END_POINT_V1.concat("/{id}"), "ABC")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Void.class);
+    }
+
+
 }
